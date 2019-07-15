@@ -152,7 +152,7 @@ class CourseUserSerializer(serializers.ModelSerializer):
             # ~ print('job', job)
             # ~ queue = Queue(connection = Redis())
             # ~ job = queue.enqueue(send_mail_note1, [validated_data['owner'].email], notice_message, 'Notice custome 4')
-            print('job', job)
+            # ~ print('job', job)
             raise serializers.ValidationError('вы уже записаны')
             return 1
         else:
