@@ -9,9 +9,10 @@ from snippets.tasks import test_job, send_mail_reg, send_mail_note, send_mail_no
 from tutorial.settings import BASE_URL
 from utils.token_generator import token_generator, create_email_confirm_url
 
+queue = Queue(connection = Redis())
+sheduler = Scheduler(connection=Redis())
 
 
-# class SnippetSerializer(serializers.ModelSerializer):
 class SnippetSerializer(serializers.HyperlinkedModelSerializer):
     # highlight = serializers.HyperlinkedIdentityField(view_name='snippet-highlight', format='html')
     class Meta:
@@ -71,7 +72,6 @@ class UserCreateSerializer(serializers.ModelSerializer):
                 # ~ 'Activation on Django', url, 'djangodev108@gmail.com',
                 # ~ [validated_data['email']], fail_silently=False
             # ~ )
-            queue = Queue(connection = Redis())
             # job = queue.enqueue(test_job, "jabba")
             job = queue.enqueue(send_mail_reg, [validated_data['email']], url)
         else:
@@ -150,7 +150,6 @@ class CourseUserSerializer(serializers.ModelSerializer):
         if CourseUsers.objects.filter(course=validated_data['course'].id, owner=validated_data['owner'].id).exists():
             # ~ job = sheduler.enqueue_in(timedelta(seconds=10), send_mail_note, [validated_data['owner'].email], notice_message)
             # ~ print('job', job)
-            # ~ queue = Queue(connection = Redis())
             # ~ job = queue.enqueue(send_mail_note1, [validated_data['owner'].email], notice_message, 'Notice custome 4')
             # ~ print('job', job)
             raise serializers.ValidationError('вы уже записаны')
@@ -160,9 +159,7 @@ class CourseUserSerializer(serializers.ModelSerializer):
                 course=validated_data['course'],
                 owner=validated_data['owner'],
                 )
-            queue = Queue(connection = Redis())
             job = queue.enqueue(send_mail_note, [validated_data['owner'].email], notice_message)
-            sheduler = Scheduler(connection=Redis())
             for lessn in queryset:
                 sec = lessn.timestamp()-3600*24
                 date_notice = datetime.utcfromtimestamp(sec)
