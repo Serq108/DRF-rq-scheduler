@@ -1,6 +1,6 @@
-Django==2.2.2
+Django==2.2.1
 graphene==2.1.5
-graphene-django==2.2.0
+graphene-django==2.3.0
 django-filter==2.1.0
 coverage==4.5.4    
 django-cors-headers==3.0.2    
