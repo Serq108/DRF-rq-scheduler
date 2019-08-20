@@ -4,7 +4,7 @@ from rq import Queue
 from django.contrib.auth.models import User, Group
 from rest_framework import serializers
 from rq_scheduler import Scheduler
-from snippets.models import Snippet, CourseList, CoursePage, CourseUsers
+from snippets.models import Snippet, CourseList, CoursePage, CourseUsers, ReMessage
 from snippets.tasks import test_job, send_mail_reg, send_mail_note, send_mail_note1
 from tutorial.settings import BASE_URL
 from utils.token_generator import token_generator, create_email_confirm_url
@@ -161,9 +161,15 @@ class CourseUserSerializer(serializers.ModelSerializer):
                 )
             job = queue.enqueue(send_mail_note, [validated_data['owner'].email], notice_message)
             for lessn in queryset:
-                sec = lessn.timestamp()-3600*24
-                date_notice = datetime.utcfromtimestamp(sec)
-                sheduler.enqueue_at(date_notice, send_mail_note, [validated_data['owner'].email], 'У вас завтра урок')
+                ReMessage.objects.create(
+                    dtm=lessn,
+                    email=validated_data['owner'].email,
+                    message='У вас завтра урок',
+                )
+                #sheduler.shedule(func=someprint(), interval=3, repeat=10)
+                # ~ sec = lessn.timestamp()-3600*24
+                # ~ date_notice = datetime.utcfromtimestamp(sec)
+                # ~ sheduler.enqueue_at(date_notice, send_mail_note, [validated_data['owner'].email], 'У вас завтра урок')
             return courseuser
 
     title = serializers.ReadOnlyField(source='course.title')
